@@ -19,14 +19,11 @@ func Generate(f interface{})(gin.HandlerFunc,error)  {
 	}
 	numIn := ftype.NumIn()
 	numOut := ftype.NumOut()
-	logs.Info(numIn)
 	paramsType:= make([]reflect.Type,0,numIn)
-	logs.Info(len(paramsType))
 	for i:=0;i<numIn;i++{
 		t := ftype.In(i)
 		paramsType = append(paramsType,t)
 	}
-	logs.Info(len(paramsType))
 	outNames := make([]string,0,numOut)
 	for i:=0;i<numOut;i++{
 		outNames = append(outNames,ftype.Out(i).Name())
