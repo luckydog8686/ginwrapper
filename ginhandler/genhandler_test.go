@@ -1,6 +1,7 @@
 package ginhandler
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"testing"
 )
@@ -11,9 +12,13 @@ func TestGenerate(t *testing.T) {
 		t.Fatal(err)
 	}
 	router := gin.Default()
-	router.POST("/ping",f)
+	for k,v := range f{
+		router.POST(fmt.Sprintf("%s",k),v)
+	}
+
 	router.Run("127.0.0.1:80")
 }
+
 
 type SS struct {
 	Name string

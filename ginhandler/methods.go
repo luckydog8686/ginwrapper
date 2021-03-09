@@ -27,13 +27,14 @@ func ExtractMethods(params ...interface{}) (map[string]interface{},error) {
 			logs.Info("ptr")
 		}
 		if vt.Kind()==reflect.Func{
-			funcName := GetFuncName(v)
 			handler,err := Generate(v)
 
 			if err != nil {
 				logs.Fatal(err)
 			}
-			funcMap[funcName]=handler
+			for k,v := range handler{
+				funcMap[k]=v
+			}
 			continue
 		}
 		return nil,errors.New("Encounter unsupported kind, only struct and func are supported!")
