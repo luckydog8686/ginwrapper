@@ -19,6 +19,10 @@ func Generate(f interface{})(map[string]gin.HandlerFunc,error)  {
 	if ftype.Kind()== reflect.Func{
 		return generateByFunc(f)
 	}
+	if ftype.Kind()==reflect.Struct{
+
+	}
+
 	return nil,nil
 }
 
@@ -56,19 +60,23 @@ func  generateByFunc(f interface{})(map[string]gin.HandlerFunc,error){
 			if err !=nil{
 				context.JSON(http.StatusOK,gin.H{
 					"error":err,
-					"data":"",
+					"data":nil,
 				})
 				return
 			}
 		}
 		rst := call(f,params...)
-
-		context.JSON(http.StatusOK,rst[0].Interface())
+		logs.Info(rst[0].Interface())
+		context.JSON(http.StatusOK,gin.H{
+			"data":rst[0].Interface(),
+			"error":rst[1].Interface(),
+		})
 	}
 	return ret,nil
 }
 
 func generateByStruct(s interface{})(map[string]gin.HandlerFunc,error)  {
+
 	return nil,nil
 }
 

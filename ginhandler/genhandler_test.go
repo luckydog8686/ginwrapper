@@ -3,6 +3,7 @@ package ginhandler
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/luckydog8686/errors"
 	"testing"
 )
 
@@ -20,13 +21,22 @@ func TestGenerate(t *testing.T) {
 }
 
 
+
+
+
+
+
+
 type SS struct {
 	Name string
 }
 
-func Ping(s *SS) gin.H{
-	ret := make(map[string]interface{})
-	ret["error"]=nil
-	ret["data"]=s
-	return ret
+func (s *SS)Hello(str string) (string,error)   {
+	return "fuck the world",errors.New("fuck")
+}
+
+
+func Ping(s *SS) (*SS,error){
+	return s,errors.New("fuck")
+
 }
