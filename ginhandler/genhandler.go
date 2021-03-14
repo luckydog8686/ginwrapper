@@ -1,6 +1,7 @@
 package ginhandler
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/luckydog8686/logs"
 	"net/http"
@@ -20,7 +21,10 @@ func Generate(f interface{})(map[string]gin.HandlerFunc,error)  {
 		return generateByFunc(f)
 	}
 	if ftype.Kind()==reflect.Struct{
-
+		return generateByStruct(f)
+	}
+	if ftype.Kind()==reflect.Ptr && ftype.Elem().Kind()==reflect.Struct{
+		return generateByStructPtr(f)
 	}
 
 	return nil,nil
@@ -76,11 +80,65 @@ func  generateByFunc(f interface{})(map[string]gin.HandlerFunc,error){
 }
 
 func generateByStruct(s interface{})(map[string]gin.HandlerFunc,error)  {
+	//ret := make(map[string]gin.HandlerFunc)
 
+	val := reflect.ValueOf(s)
+	logs.Info("generateByStruct::",val.NumMethod())
+
+	for i :=0;i<val.NumMethod();i++{
+		method := val.Type().Method(i)
+		logs.Info(method.Type.NumIn())
+		logs.Info(method.Type.In(0))
+		logs.Info(method.Type.NumOut())
+		logs.Info(method.Type.Out(0))
+		logs.Info(method.Name)
+
+	}
 	return nil,nil
 }
 
+func generateByStructPtr(s interface{})(map[string]gin.HandlerFunc,error)  {
+	vtype := reflect.TypeOf(s)
+	structName := vtype.Elem().Name()
+	val := reflect.ValueOf(s)
+	logs.Info("generateByStruct::",val.NumMethod())
+	//ret := make(map[string]gin.HandlerFunc)
 
+	for i :=0;i<val.NumMethod();i++{
+		method := val.Type().Method(i)
+		mapKey := fmt.Sprintf("%s/%s",structName,method.Name)
+		logs.Info(mapKey)
+		logs.Info(method.Type.NumIn())
+		logs.Info(method.Type.In(1))
+		logs.Info(method.Name)
+		logs.Info(method.Type.In(1).Elem())
+		s := reflect.New(method.Type.In(1).Elem())
+		s.Elem().Field(0).Set(reflect.ValueOf("hello world"))
+		var params []reflect.Value
+		params = append(params,s)
+		val.Method(i).Call(params)
+	}
+	return nil,nil
+}
+
+func GetStructName(name string)string  {
+	var seps []rune = []rune{'.','/'}
+	fields := strings.FieldsFunc(name, func(sep rune) bool {
+		for _, s := range seps {
+			if sep == s {
+				return true
+			}
+		}
+		return false
+	})
+
+	// fmt.Println(fields)
+
+	if size := len(fields); size > 0 {
+		return strings.ToLower(fields[size-1])+"/"
+	}
+	return ""
+}
 
 func GetFunctionName(i interface{}) string {
 	// 获取函数名称

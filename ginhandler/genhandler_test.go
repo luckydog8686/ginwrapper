@@ -4,11 +4,14 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/luckydog8686/errors"
+	"github.com/luckydog8686/logs"
+	"net/http"
 	"testing"
 )
 
 func TestGenerate(t *testing.T) {
-	f,err := Generate(Ping)
+	s := &SS{}
+	f,err := Generate(s)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -16,7 +19,9 @@ func TestGenerate(t *testing.T) {
 	for k,v := range f{
 		router.POST(fmt.Sprintf("%s",k),v)
 	}
-
+	router.POST("fuck/you", func(context *gin.Context) {
+		context.JSON(http.StatusOK,"fuckkk")
+	})
 	router.Run("127.0.0.1:80")
 }
 
@@ -31,7 +36,8 @@ type SS struct {
 	Name string
 }
 
-func (s *SS)Hello(str string) (string,error)   {
+func (s *SS)Hello(str *SS) (string,error)   {
+	logs.Info("=======",str.Name)
 	return "fuck the world",errors.New("fuck")
 }
 
