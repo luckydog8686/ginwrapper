@@ -112,7 +112,7 @@ func generateByStructPtr(s interface{})(map[string]gin.HandlerFunc,error)  {
 	for i :=0;i<val.NumMethod();i++{
 		j := i
 		method := val.Type().Method(j)
-		mapKey := fmt.Sprintf("%s/%s",structName,method.Name)
+		mapKey := strings.ToLower(fmt.Sprintf("%s/%s",structName,method.Name))
 		ret[mapKey]= func(c *gin.Context) {
 			logs.Info(mapKey)
 			numIn := method.Type.NumIn()
