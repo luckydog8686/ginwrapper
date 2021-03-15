@@ -3,6 +3,7 @@ package ginhandler
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/luckydog8686/errors"
 	"github.com/luckydog8686/logs"
 	"net/http"
 	"reflect"
@@ -24,6 +25,7 @@ func Generate(f interface{})(map[string]gin.HandlerFunc,error)  {
 		return generateByStruct(f)
 	}
 	if ftype.Kind()==reflect.Ptr && ftype.Elem().Kind()==reflect.Struct{
+		logs.Info("generateByStructPtr")
 		return generateByStructPtr(f)
 	}
 
@@ -101,24 +103,47 @@ func generateByStructPtr(s interface{})(map[string]gin.HandlerFunc,error)  {
 	vtype := reflect.TypeOf(s)
 	structName := vtype.Elem().Name()
 	val := reflect.ValueOf(s)
+	if val.NumMethod() == 0{
+		return nil,errors.New(fmt.Sprintf("no method for struct %s",structName))
+	}
 	logs.Info("generateByStruct::",val.NumMethod())
-	//ret := make(map[string]gin.HandlerFunc)
+	ret := make(map[string]gin.HandlerFunc)
 
 	for i :=0;i<val.NumMethod();i++{
-		method := val.Type().Method(i)
+		j := i
+		method := val.Type().Method(j)
 		mapKey := fmt.Sprintf("%s/%s",structName,method.Name)
-		logs.Info(mapKey)
-		logs.Info(method.Type.NumIn())
-		logs.Info(method.Type.In(1))
-		logs.Info(method.Name)
-		logs.Info(method.Type.In(1).Elem())
-		s := reflect.New(method.Type.In(1).Elem())
-		s.Elem().Field(0).Set(reflect.ValueOf("hello world"))
-		var params []reflect.Value
-		params = append(params,s)
-		val.Method(i).Call(params)
+		ret[mapKey]= func(c *gin.Context) {
+			logs.Info(mapKey)
+			numIn := method.Type.NumIn()
+			var params []reflect.Value
+			if numIn >1 {
+				s := reflect.New(method.Type.In(1).Elem())
+				if err:=c.Bind(s);err!= nil{
+					c.JSON(http.StatusOK,gin.H{
+						"error":err,
+						"data":nil,
+					})
+				}
+				params = append(params,s)
+			}
+			/*
+			logs.Info(method.Type.In(1))
+			logs.Info(method.Name)
+			logs.Info(method.Type.In(1).Elem())
+			s := reflect.New(method.Type.In(1).Elem())
+			s.Elem().Field(0).Set(reflect.ValueOf("hello world"))
+			 */
+			logs.Info("index i ::",j,"== val nummethod :",val.NumMethod())
+			rtns :=val.Method(j).Call(params)
+			logs.Info(len(rtns))
+			c.JSON(http.StatusOK,gin.H{
+				"data":rtns[0].Interface(),
+				"error":rtns[1].Interface(),
+			})
+		}
 	}
-	return nil,nil
+	return ret,nil
 }
 
 func GetStructName(name string)string  {
