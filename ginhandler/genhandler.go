@@ -118,25 +118,22 @@ func generateByStructPtr(s interface{})(map[string]gin.HandlerFunc,error)  {
 			numIn := method.Type.NumIn()
 			var params []reflect.Value
 			if numIn >1 {
+				logs.Info(method.Type.In(1))
+				logs.Info(method.Type.In(1).Elem())
 				s := reflect.New(method.Type.In(1).Elem())
-				if err:=c.Bind(s);err!= nil{
+				s2 := s.Interface()
+				if err:=c.Bind(s2);err!= nil{
+					logs.Info(err)
 					c.JSON(http.StatusOK,gin.H{
 						"error":err,
 						"data":nil,
 					})
+					return
 				}
 				params = append(params,s)
 			}
-			/*
-			logs.Info(method.Type.In(1))
-			logs.Info(method.Name)
-			logs.Info(method.Type.In(1).Elem())
-			s := reflect.New(method.Type.In(1).Elem())
-			s.Elem().Field(0).Set(reflect.ValueOf("hello world"))
-			 */
-			logs.Info("index i ::",j,"== val nummethod :",val.NumMethod())
 			rtns :=val.Method(j).Call(params)
-			logs.Info(len(rtns))
+
 			c.JSON(http.StatusOK,gin.H{
 				"data":rtns[0].Interface(),
 				"error":rtns[1].Interface(),

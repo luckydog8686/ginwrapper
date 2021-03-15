@@ -38,7 +38,7 @@ type SS struct {
 
 func (s *SS)Hello(str *SS) (string,error)   {
 	logs.Info("=======",str.Name)
-	return "fuck the world",errors.New("fuck")
+	return str.Name+"fuck the world",errors.New("fuck")
 }
 
 
