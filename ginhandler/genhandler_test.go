@@ -40,6 +40,10 @@ func (s *SS)Hello(str *SS) (string,error)   {
 	logs.Info("=======",str.Name)
 	return str.Name+"fuck the world",errors.New("fuck")
 }
+func (s *SS)Ping(str string) (string,error)   {
+	logs.Info(str)
+	return fmt.Sprintf("ping %s",str),nil
+}
 
 
 func Ping(s *SS) (*SS,error){

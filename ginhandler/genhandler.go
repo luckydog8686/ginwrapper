@@ -118,9 +118,13 @@ func generateByStructPtr(s interface{})(map[string]gin.HandlerFunc,error)  {
 			numIn := method.Type.NumIn()
 			var params []reflect.Value
 			if numIn >1 {
-				logs.Info(method.Type.In(1))
-				logs.Info(method.Type.In(1).Elem())
-				s := reflect.New(method.Type.In(1).Elem())
+				var s  reflect.Value
+				if method.Type.In(1).Kind() == reflect.Ptr{
+					s = reflect.New(method.Type.In(1).Elem())
+				}else{
+					s = reflect.New(method.Type.In(1))
+				}
+
 				s2 := s.Interface()
 				if err:=c.Bind(s2);err!= nil{
 					logs.Info(err)
@@ -130,7 +134,11 @@ func generateByStructPtr(s interface{})(map[string]gin.HandlerFunc,error)  {
 					})
 					return
 				}
-				params = append(params,s)
+				if method.Type.In(1).Kind() == reflect.Ptr{
+					params = append(params,s)
+				}else{
+					params = append(params,reflect.Indirect(s))
+				}
 			}
 			rtns :=val.Method(j).Call(params)
 
